@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func ConnectToDB(host string, port int, user string, password string, dbname string) {
+func ConnectToDB(host string, port int, user string, password string, dbname string) (*sql.DB){
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 							host, port, user, password, dbname)
 
@@ -17,8 +17,6 @@ func ConnectToDB(host string, port int, user string, password string, dbname str
 		panic(err)
 	}
 
-	defer db.Close()
-
 	err = db.Ping()
 
 	if err != nil {
@@ -26,4 +24,6 @@ func ConnectToDB(host string, port int, user string, password string, dbname str
 	}
 
 	fmt.Println("Successfully connected")
+
+	return db
 }

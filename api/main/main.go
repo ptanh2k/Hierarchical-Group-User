@@ -1,8 +1,10 @@
 package main
 
 import (
+	"cycir/group"
 	"cycir/utils"
 	"flag"
+	"fmt"
 )
 
 type Config struct {
@@ -22,5 +24,20 @@ func main() {
 
 	flag.Parse()
 
-	utils.ConnectToDB(*host, *port, *user, *password, *dbname)
+	db := utils.ConnectToDB(*host, *port, *user, *password, *dbname)
+
+	defer db.Close()
+
+	fmt.Println("Testing features: ")
+
+	var choice int
+	fmt.Print("Your choice? ")
+	fmt.Scanln(&choice)
+
+	switch choice {
+	case 1:
+		group.GetAllGroup(db)
+	default:
+		break
+	}
 }
