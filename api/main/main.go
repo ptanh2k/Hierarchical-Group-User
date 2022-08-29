@@ -14,7 +14,6 @@ type Config struct {
 	DB_name	string	`mapstructure:"DB_NAME"`
 }
 
-
 func main() {
 	host := flag.String("host", "localhost", "Enter host (localhost): ")
 	port := flag.Int("port", 5432, "Enter port (5432): ")
@@ -36,7 +35,9 @@ func main() {
 
 	switch choice {
 	case 1:
-		group.GetAllGroup(db)
+		group.GetAllInfo(db)
+	case 2:
+		group.GetAllGroupPath(db)
 	default:
 		break
 	}

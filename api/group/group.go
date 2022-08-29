@@ -12,7 +12,31 @@ type Group struct {
 	Path string
 }
 
-func GetAllGroup(db *sql.DB) {
+func GetAllInfo(db *sql.DB) {
+	rows, err := db.Query("SELECT * FROM group_;")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+
+	fmt.Println("name\tname_in_path\tpath")
+
+	for rows.Next() {
+		var g Group
+		if err := rows.Scan(&g.Name, &g.Name_in_path, &g.Path); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%s\t%s\t%s\n", g.Name, g.Name_in_path, g.Path)
+	}
+
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+}
+
+func GetAllGroupPath(db *sql.DB) {
 	rows, err := db.Query("SELECT path FROM group_;")
 
 	if err != nil {
