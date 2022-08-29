@@ -31,23 +31,11 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/groups", group.GetAllInfo)
-	router.GET("/users", user.GetAllInfo)
+	// Group
+	router.GET("/groups", group.GetAllInfo(db))
 
-	// fmt.Println("Testing features: ")
+	// User
+	router.GET("/users", user.GetAllInfo(db))
 
-	// var choice int
-	// fmt.Print("Your choice? ")
-	// fmt.Scanln(&choice)
-
-	// switch choice {
-	// case 1:
-	// 	group.GetAllInfo(db)
-	// case 2:
-	// 	group.GetAllGroupPath(db)
-	// case 3:
-	// 	user.GetAllInfo(db)
-	// default:
-	// 	break
-	// }
+	router.Run("localhost:8080")
 }
