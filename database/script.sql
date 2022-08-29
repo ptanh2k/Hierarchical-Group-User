@@ -29,6 +29,8 @@ SELECT path, nlevel(path) FROM group_ WHERE path @ 'Tier_1'
 
 SELECT name, path, nlevel(path), subpath(path, 0, -1) as parent from group_
 
+SELECT path, nlevel(path) FROM group_ WHERE name='Tier 1'
+
 --- TABLE for User
 CREATE TABLE user_ (
 	uid SERIAL PRIMARY KEY,
