@@ -4,18 +4,20 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 type User struct {
-	uid       int
-	username  string
-	firstname string
-	lastname  string
-	email     string
-	path      string
+	Uid       int    `json:"uid"`
+	Username  string `json:"username"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
+	Path      string `json:"path"`
 }
 
-func GetAllInfo(db *sql.DB) {
+func GetAllInfo(db *sql.DB, c *gin.Context) {
 	rows, err := db.Query("SELECT * FROM user_;")
 
 	if err != nil {
@@ -28,10 +30,10 @@ func GetAllInfo(db *sql.DB) {
 
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.uid, &u.username, &u.firstname, &u.lastname, &u.email, &u.path); err != nil {
+		if err := rows.Scan(&u.Uid, &u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.Path); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%s\t%s\t%s\t%s\n", u.username, u.firstname, u.lastname, u.path)
+		fmt.Printf("%s\t%s\t%s\t%s\n", u.Username, u.Firstname, u.Lastname, u.Path)
 	}
 
 	if err := rows.Err(); err != nil {

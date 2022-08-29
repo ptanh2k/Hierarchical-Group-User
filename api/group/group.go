@@ -4,15 +4,17 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Group struct {
-	Name string
+	Name         string `json:"name"`
 	Name_in_path string
-	Path string
+	Path         string `json:"path"`
 }
 
-func GetAllInfo(db *sql.DB) {
+func GetAllInfo(db *sql.DB, c *gin.Context) {
 	rows, err := db.Query("SELECT * FROM group_;")
 
 	if err != nil {

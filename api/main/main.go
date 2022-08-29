@@ -5,7 +5,8 @@ import (
 	"cycir/user"
 	"cycir/utils"
 	"flag"
-	"fmt"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Config struct {
@@ -28,20 +29,25 @@ func main() {
 
 	defer db.Close()
 
-	fmt.Println("Testing features: ")
+	router := gin.Default()
 
-	var choice int
-	fmt.Print("Your choice? ")
-	fmt.Scanln(&choice)
+	router.GET("/groups", group.GetAllInfo)
+	router.GET("/users", user.GetAllInfo)
 
-	switch choice {
-	case 1:
-		group.GetAllInfo(db)
-	case 2:
-		group.GetAllGroupPath(db)
-	case 3:
-		user.GetAllInfo(db)
-	default:
-		break
-	}
+	// fmt.Println("Testing features: ")
+
+	// var choice int
+	// fmt.Print("Your choice? ")
+	// fmt.Scanln(&choice)
+
+	// switch choice {
+	// case 1:
+	// 	group.GetAllInfo(db)
+	// case 2:
+	// 	group.GetAllGroupPath(db)
+	// case 3:
+	// 	user.GetAllInfo(db)
+	// default:
+	// 	break
+	// }
 }
