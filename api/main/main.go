@@ -26,6 +26,7 @@ func main() {
 
 	// Group
 	router.GET("/groups", group.GetAllInfo(db))
+	router.GET("/groups/:name/sub", group.GetSubGroup(db))
 	router.POST("/groups", group.AddNewGroup(db))
 
 	// User

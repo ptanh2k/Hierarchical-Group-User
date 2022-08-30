@@ -22,7 +22,7 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 		rows, err := db.Query("SELECT * FROM user_;")
 
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 
 		defer rows.Close()

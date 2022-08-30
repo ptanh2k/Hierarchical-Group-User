@@ -11,8 +11,10 @@ import (
 
 type Group struct {
 	Name         string `json:"name"`
-	Name_in_path string `json:"name_in_path"`
-	Path         string `json:"path"`
+	Name_in_path string `json:"name_in_path,omitempty"`
+	Path         string `json:"path,omitempty"`
+	Parent       string `json:"parent,omitempty"`
+	Level        int    `json:"level,omitempty"`
 }
 
 type Path struct {
@@ -21,6 +23,7 @@ type Path struct {
 	Level     int    `json:"level"`
 }
 
+// Get all info relate to group
 func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		rows, err := db.Query("SELECT name, path, subpath(path, 0, -1) parent, nlevel(path) level FROM group_;")
@@ -31,17 +34,10 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 
 		defer rows.Close() // Should be called after handling error to avoid panic for trying to close a nil resultset
 
-		type GroupWithLevel struct {
-			Name   string `json:"name"`
-			Path   string `json:"path"`
-			Parent string `json:"parent"`
-			Level  int    `json:"level"`
-		}
-
-		groups := make([]GroupWithLevel, 0)
+		groups := make([]Group, 0)
 
 		for rows.Next() {
-			var g GroupWithLevel
+			var g Group
 			if err := rows.Scan(&g.Name, &g.Path, &g.Parent, &g.Level); err != nil {
 				log.Fatal(err)
 			}
@@ -56,6 +52,7 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
+// Add new group to system
 func AddNewGroup(db *sql.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		var newGroup Group
@@ -79,6 +76,47 @@ func AddNewGroup(db *sql.DB) gin.HandlerFunc {
 		}
 
 		fmt.Printf("Created successfully (%d row(s) affected)", rowsAffected)
+	}
+
+	return gin.HandlerFunc(fn)
+}
+
+// Get all sub groups of a group and their level
+func GetSubGroup(db *sql.DB) gin.HandlerFunc {
+	fn := func(c *gin.Context) {
+		name := c.Param("name")
+
+		rows, err := db.Query(`SELECT name, path, nlevel(path) level FROM group_ 
+								WHERE path <@ (
+									SELECT path FROM group_
+									WHERE name = $1
+								)
+								AND path <> (
+									SELECT path FROM group_
+									WHERE name = $1
+								)`, name)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer rows.Close()
+
+		sub_groups := make([]Group, 0)
+
+		for rows.Next() {
+			var g Group
+			if err := rows.Scan(&g.Name, &g.Path, &g.Level); err != nil {
+				log.Fatal(err)
+			}
+			sub_groups = append(sub_groups, g)
+		}
+
+		c.IndentedJSON(http.StatusOK, sub_groups)
+
+		if err := rows.Err(); err != nil {
+			panic(err)
+		}
 	}
 
 	return gin.HandlerFunc(fn)

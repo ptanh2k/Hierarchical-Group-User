@@ -1,3 +1,5 @@
+**Đề bải**
+
 Hệ thống giúp người dùng quản lý group và các user trong group, thiết kế DB cho tính
 năng này.
 
@@ -8,9 +10,43 @@ có các group A, B, C khác để đảm nhận các nhiệm vụ riêng, trong
 khác.
 
 **Yêu cầu**:
+
 - Dựng model, init dữ liệu sample.
 - Cho tên 1 group ví dụ Tier 1, thực hiện truy vấn tìm ra cây thư mục của group này, bao gồm các
-group con ở tất cả các cấp và level của chúng để portal có thể hiển thị được cây thư mục như
-trên. Sử dụng Pgadmin hoặc các tool tương tự thực hiện truy vấn.
+  group con ở tất cả các cấp và level của chúng để portal có thể hiển thị được cây thư mục như
+  trên. Sử dụng Pgadmin hoặc các tool tương tự thực hiện truy vấn.
 - Cũng với yêu cầu trên viết 1 service api thực hiện nghiệp vụ này. (Có thể sử dụng Python hoặc
-Golang client).
+  Golang client).
+
+**Chạy chương trình Demo**
+
+- Kết nối PostgreSQL, thực thi các câu lệnh trong file script.sql.
+
+- Tại thư mục /api/main, chạy câu lệnh:
+
+```
+go run . --host=<db-hostname> --port=<db-port> --user=<db-username>  --password=<db-password> --db=<db-to-use>
+```
+
+Chương trình sẽ chạy trên http://localhost:8080
+
+**API**
+
+- Group
+
+```
+GET /groups             Lấy thông tin các group
+GET /groups/:name/sub   Lấy thông tin các group con (tên, path, cấp)
+POST /groups            Tạo group mới
+```
+
+- User
+
+```
+GET /users              Lấy thông tin toàn bộ người dùng
+GET /users/:id          Lấy thông tin người dùng dựa trên ID
+```
+
+**Diagram**
+
+![Group-user drawio](https://user-images.githubusercontent.com/50461553/187378793-88bb379e-e489-4caa-8748-5af1619f1256.png)

@@ -4,9 +4,10 @@ CREATE EXTENSION IF NOT EXISTS ltree;
 
 --- TABLE for Group
 CREATE TABLE group_ (
+    gid SERIAL PRIMARY KEY,
 	name VARCHAR(50) NOT NULL,
 	name_in_path VARCHAR(60) NOT NULL,
-	path ltree UNIQUE NOT NULL PRIMARY KEY
+	path ltree UNIQUE NOT NULL
 )
 
 INSERT INTO group_ (name, name_in_path, path) VALUES
@@ -23,8 +24,6 @@ INSERT INTO group_ (name, name_in_path, path) VALUES
 SELECT path, nlevel(path) FROM group_ WHERE path @ 'Tier_1'
 
 SELECT * FROM group_
-
-ALTER TABLE group_ ADD gid SERIAL
 
 -- Change PRIMARY KEY for group_ table --
 -- ALTER TABLE group_ DROP CONSTRAINT group__pkey;
@@ -45,8 +44,6 @@ CREATE TABLE user_ (
 	gid INT REFERENCES group_(gid)
 )
 
-DROP TABLE user_
-
 INSERT INTO user_ (username, firstname, lastname, email, gid) VALUES
 ('feelingBlue00', 'Tom', 'Hansen', 'feelingBlue@gmail.com', 4),
 ('Chris B Bacon', 'Chris', 'Dao', 'Ilovebacon@gmail.com', 5),
@@ -57,4 +54,4 @@ INSERT INTO user_ (username, firstname, lastname, email, gid) VALUES
 
 SELECT u.username, u.firstname, u.lastname, u.email, g.path
 FROM user_ u
-INNER JOIN group_ g ON u.gid = g.gid WHERE u.uid = 1
+INNER JOIN group_ g ON u.gid = g.gid WHERE u.uid = 3
