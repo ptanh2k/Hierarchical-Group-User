@@ -10,9 +10,9 @@ import (
 )
 
 type Group struct {
-	Name         string `json:"name"`
-	Path         string `json:"path"`
-	Level 		 int 	`json:"level"`
+	Name  string `json:"name"`
+	Path  string `json:"path"`
+	Level int    `json:"level"`
 }
 
 func GetAllInfo(db *sql.DB) gin.HandlerFunc {
@@ -23,7 +23,7 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 			log.Fatal(err)
 		}
 
-		defer rows.Close()
+		defer rows.Close()		// Should be called after handling error to avoid panic for trying to close a nil resultset
 
 		var groups []Group
 
@@ -43,24 +43,27 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func GetAllGroupPath(db *sql.DB) {
-	rows, err := db.Query("SELECT path FROM group_;")
+func GetAllGroupPath(db *sql.DB) gin.HandlerFunc {
+	fn := func(c *gin.Context) {
+		rows, err := db.Query("SELECT path, subpath(path, 0, -1), nlevel(path) as parent FROM group_;")
 
-	if err != nil {
-		panic(err)
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var path string
-		if err := rows.Scan(&path); err != nil {
-			log.Fatal(err)
+		if err != nil {
+			panic(err)
 		}
-		fmt.Println(path)
-	}
 
-	if err := rows.Err(); err != nil {
-		panic(err)
+		defer rows.Close()
+
+		for rows.Next() {
+			var path string
+			if err := rows.Scan(&path); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(path)
+		}
+
+		if err := rows.Err(); err != nil {
+			panic(err)
+		}
 	}
+	return gin.HandlerFunc(fn)
 }

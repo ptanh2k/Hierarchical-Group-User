@@ -33,6 +33,7 @@ func main() {
 
 	// Group
 	router.GET("/groups", group.GetAllInfo(db))
+	router.GET("/groups/paths", group.GetAllGroupPath(db))
 
 	// User
 	router.GET("/users", user.GetAllInfo(db))
