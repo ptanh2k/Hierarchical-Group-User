@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	Uid       int    `json:"uid"`
+	Uid       int    `json:"uid,omitempty"`
 	Username  string `json:"username"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
@@ -27,7 +27,7 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 
 		defer rows.Close()
 
-		var users []User
+		users := make([]User, 0)
 
 		for rows.Next() {
 			var u User
@@ -43,5 +43,35 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 			panic(err)
 		}
 	}
+	return gin.HandlerFunc(fn)
+}
+
+// Get user by user ID
+func GetUserById(db *sql.DB) gin.HandlerFunc {
+	fn := func(c *gin.Context) {
+		id := c.Param("id")
+
+		stmt, err := db.Prepare(`SELECT u.username, u.firstname, u.lastname, u.email, g.path 
+								FROM user_ u INNER JOIN group_ g 
+								ON u.gid = g.gid WHERE u.uid = $1;`)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var u User
+
+		err = stmt.QueryRow(id).Scan(&u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.Path)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.IndentedJSON(http.StatusNotFound, u)
+			}
+			panic(err)
+		}
+
+		c.IndentedJSON(http.StatusOK, u)
+	}
+
 	return gin.HandlerFunc(fn)
 }

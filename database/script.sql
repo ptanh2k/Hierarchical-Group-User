@@ -22,6 +22,10 @@ INSERT INTO group_ (name, name_in_path, path) VALUES
 
 SELECT path, nlevel(path) FROM group_ WHERE path @ 'Tier_1'
 
+SELECT * FROM group_
+
+ALTER TABLE group_ ADD gid SERIAL
+
 -- Change PRIMARY KEY for group_ table --
 -- ALTER TABLE group_ DROP CONSTRAINT group__pkey;
 
@@ -38,15 +42,19 @@ CREATE TABLE user_ (
 	firstname VARCHAR(50) NOT NULL,
 	lastname VARCHAR(50) NOT NULL,
 	email TEXT UNIQUE NOT NULL,
-	path ltree REFERENCES group_(path)
+	gid INT REFERENCES group_(gid)
 )
 
-INSERT INTO user_ (username, firstname, lastname, email, path) VALUES
-('feelingBlue00', 'Tom', 'Hansen', 'feelingBlue@gmail.com', 'Viettel_Ticket.Tier_1.Group_Viettel_1'),
-('Chris B Bacon', 'Chris', 'Dao', 'Ilovebacon@gmail.com', 'Viettel_Ticket.Tier_1.Group_Viettel_2'),
-('Harvey Nguyen', 'Harvey', 'Nguyen', 'tibi2k@gmail.com', 'Viettel_Ticket.Tier_1.Group_Viettel_1'),
-('Viettel', 'Viet', 'tel', 'Viettel@gmail.com', 'Viettel_Ticket'),
-('Henry', 'Henry', 'Nguyen', 'lmh@gmail.com', 'Viettel_Ticket.Tier_2.Group_Viettel_1'),
-('NB_Prince', 'Hoang Anh', 'Duong Minh', 'dmha@gmail.com', 'Viettel_Ticket.Tier_2.Group_Viettel_3')
+DROP TABLE user_
 
-SELECT * FROM user_ WHERE path @ 'Tier_1'
+INSERT INTO user_ (username, firstname, lastname, email, gid) VALUES
+('feelingBlue00', 'Tom', 'Hansen', 'feelingBlue@gmail.com', 4),
+('Chris B Bacon', 'Chris', 'Dao', 'Ilovebacon@gmail.com', 5),
+('Harvey Nguyen', 'Harvey', 'Nguyen', 'tibi2k@gmail.com', 5),
+('Viettel', 'Viet', 'tel', 'Viettel@gmail.com', 6),
+('Henry', 'Henry', 'Nguyen', 'lmh@gmail.com', 7),
+('NB_Prince', 'Hoang Anh', 'Duong Minh', 'dmha@gmail.com', 9)
+
+SELECT u.username, u.firstname, u.lastname, u.email, g.path
+FROM user_ u
+INNER JOIN group_ g ON u.gid = g.gid WHERE u.uid = 1
