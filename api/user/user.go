@@ -14,7 +14,7 @@ type User struct {
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
-	Path      string `json:"path"`
+	GID       int    `json:"gid,omitempty"`
 }
 
 func GetAllInfo(db *sql.DB) gin.HandlerFunc {
@@ -31,7 +31,7 @@ func GetAllInfo(db *sql.DB) gin.HandlerFunc {
 
 		for rows.Next() {
 			var u User
-			if err := rows.Scan(&u.Uid, &u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.Path); err != nil {
+			if err := rows.Scan(&u.Uid, &u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.GID); err != nil {
 				log.Fatal(err)
 			}
 			users = append(users, u)
@@ -51,7 +51,7 @@ func GetUserById(db *sql.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		id := c.Param("id")
 
-		stmt, err := db.Prepare(`SELECT u.username, u.firstname, u.lastname, u.email, g.path 
+		stmt, err := db.Prepare(`SELECT u.username, u.firstname, u.lastname, u.email, g.gid 
 								FROM user_ u INNER JOIN group_ g 
 								ON u.gid = g.gid WHERE u.uid = $1;`)
 
@@ -61,7 +61,7 @@ func GetUserById(db *sql.DB) gin.HandlerFunc {
 
 		var u User
 
-		err = stmt.QueryRow(id).Scan(&u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.Path)
+		err = stmt.QueryRow(id).Scan(&u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.GID)
 
 		if err != nil {
 			if err == sql.ErrNoRows {

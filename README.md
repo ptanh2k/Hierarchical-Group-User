@@ -35,9 +35,9 @@ Chương trình sẽ chạy trên http://localhost:8080
 - Group
 
 ```
-GET /groups             Lấy thông tin các group
-GET /groups/:name/sub   Lấy thông tin các group con (tên, path, cấp)
-POST /groups            Tạo group mới
+GET /groups                     Lấy thông tin các group
+GET /groups/:cur_group_id/sub   Lấy thông tin các group con (tên, path, cấp)
+POST /groups                    Tạo group mới
 ```
 
 - User
@@ -49,4 +49,4 @@ GET /users/:id          Lấy thông tin người dùng dựa trên ID
 
 **Diagram**
 
-![Group-user drawio](https://user-images.githubusercontent.com/50461553/187378793-88bb379e-e489-4caa-8748-5af1619f1256.png)
+![Group-user drawio](https://user-images.githubusercontent.com/50461553/187580085-bd94c42b-3af5-4474-9dae-d5cc97cd08a4.png)

@@ -3,12 +3,12 @@ CREATE DATABASE cycir WITH ENCODING 'UTF8' TEMPLATE template0;
 --- TABLE for Group
 CREATE TABLE group_ (
     gid INT PRIMARY KEY NOT NULL,
-	name VARCHAR(50) NOT NULL,
-	parent_id INT
+	name TEXT NOT NULL,
+	parent_id INT NOT NULL
 )
 
 INSERT INTO group_ (gid, name, parent_id) VALUES
-(1, 'Viettel Ticket', NULL),
+(1, 'Viettel Ticket', 0),
 (2, 'Tier 1', 1),
 (3, 'Tier 2', 1),
 (4, 'Group Viettel 1', 2),
@@ -17,14 +17,14 @@ INSERT INTO group_ (gid, name, parent_id) VALUES
 (7, 'Group Viettel 1', 3),
 (8, 'Group Viettel 2', 3),
 (9, 'Group Viettel 3', 3),
-(10, 'Viettel Cycir', NULL)
+(10, 'Viettel Cycir', 0)
 
 INSERT INTO group_ (gid, name, parent_id) VALUES
-(11, 'Viettel Ticket', 2),
+(11, 'Viettel Silver', 2),
 (20, 'Tier 1', 2)
 
 INSERT INTO group_ (gid, name, parent_id) VALUES
-(12, 'Viettel Ticket', 11),
+(12, 'Sub Viettel', 11),
 (21, 'Tier 1', 12)
 
 SELECT * FROM group_
@@ -48,12 +48,12 @@ INSERT INTO user_ (username, firstname, lastname, email, gid) VALUES
 ('NB_Prince', 'Hoang Anh', 'Duong Minh', 'dmha@gmail.com', 9)
 
 -- Recursive
-WITH RECURSIVE group_tree(gid, name, parent_id, lvl) AS (
-    SELECT gid, name, parent_id, 1 AS level
+WITH RECURSIVE group_tree(gid, name, parent_id, lvl, gpath) AS (
+    SELECT gid, name, parent_id, 0 AS level, name AS path
     FROM group_ 
-    WHERE parent_id = 1
+    WHERE parent_id = 0
   UNION ALL
-    SELECT bg.gid, bg.name, bg.parent_id, gt.lvl + 1
+    SELECT bg.gid, bg.name, bg.parent_id, gt.lvl + 1, gt.gpath || ' - ' || bg.name
     FROM group_ bg
     JOIN group_tree gt ON bg.parent_id = gt.gid
 )
