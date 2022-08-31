@@ -1,38 +1,33 @@
 CREATE DATABASE cycir WITH ENCODING 'UTF8' TEMPLATE template0;
 
-CREATE EXTENSION IF NOT EXISTS ltree;
-
 --- TABLE for Group
 CREATE TABLE group_ (
-    gid SERIAL PRIMARY KEY,
+    gid INT PRIMARY KEY NOT NULL,
 	name VARCHAR(50) NOT NULL,
-	name_in_path VARCHAR(60) NOT NULL,
-	path ltree UNIQUE NOT NULL
+	parent_id INT
 )
 
-INSERT INTO group_ (name, name_in_path, path) VALUES
-('Viettel Ticket', 'Viettel_Ticket', 'Viettel_Ticket'),
-('Tier 1', 'Tier_1', 'Viettel_Ticket.Tier_1'),
-('Tier 2', 'Tier_2', 'Viettel_Ticket.Tier_2'),
-('Group Viettel 1', 'Group_Viettel_1', 'Viettel_Ticket.Tier_1.Group_Viettel_1'),
-('Group Viettel 2', 'Group_Viettel_2', 'Viettel_Ticket.Tier_1.Group_Viettel_2'),
-('Group Viettel 3', 'Group_Viettel_3', 'Viettel_Ticket.Tier_1.Group_Viettel_3'),
-('Group Viettel 1', 'Group_Viettel_1', 'Viettel_Ticket.Tier_2.Group_Viettel_1'),
-('Group Viettel 2', 'Group_Viettel_2', 'Viettel_Ticket.Tier_2.Group_Viettel_2'),
-('Group Viettel 3', 'Group_Viettel_3', 'Viettel_Ticket.Tier_2.Group_Viettel_3')
+INSERT INTO group_ (gid, name, parent_id) VALUES
+(1, 'Viettel Ticket', NULL),
+(2, 'Tier 1', 1),
+(3, 'Tier 2', 1),
+(4, 'Group Viettel 1', 2),
+(5, 'Group Viettel 2', 2),
+(6, 'Group Viettel 3', 2),
+(7, 'Group Viettel 1', 3),
+(8, 'Group Viettel 2', 3),
+(9, 'Group Viettel 3', 3),
+(10, 'Viettel Cycir', NULL)
 
-SELECT path, nlevel(path) FROM group_ WHERE path @ 'Tier_1'
+INSERT INTO group_ (gid, name, parent_id) VALUES
+(11, 'Viettel Ticket', 2),
+(20, 'Tier 1', 2)
+
+INSERT INTO group_ (gid, name, parent_id) VALUES
+(12, 'Viettel Ticket', 11),
+(21, 'Tier 1', 12)
 
 SELECT * FROM group_
-
--- Change PRIMARY KEY for group_ table --
--- ALTER TABLE group_ DROP CONSTRAINT group__pkey;
-
--- ALTER TABLE group_ ADD PRIMARY KEY (path);
-
-SELECT name, path, nlevel(path), subpath(path, 0, -1) as parent from group_
-
-SELECT path, nlevel(path) FROM group_ WHERE name='Tier 1'
 
 --- TABLE for User
 CREATE TABLE user_ (
@@ -52,6 +47,14 @@ INSERT INTO user_ (username, firstname, lastname, email, gid) VALUES
 ('Henry', 'Henry', 'Nguyen', 'lmh@gmail.com', 7),
 ('NB_Prince', 'Hoang Anh', 'Duong Minh', 'dmha@gmail.com', 9)
 
-SELECT u.username, u.firstname, u.lastname, u.email, g.path
-FROM user_ u
-INNER JOIN group_ g ON u.gid = g.gid WHERE u.uid = 3
+-- Recursive
+WITH RECURSIVE group_tree(gid, name, parent_id, lvl) AS (
+    SELECT gid, name, parent_id, 1 AS level
+    FROM group_ 
+    WHERE parent_id = 1
+  UNION ALL
+    SELECT bg.gid, bg.name, bg.parent_id, gt.lvl + 1
+    FROM group_ bg
+    JOIN group_tree gt ON bg.parent_id = gt.gid
+)
+SELECT * FROM group_tree;
