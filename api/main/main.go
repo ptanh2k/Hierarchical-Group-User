@@ -18,15 +18,17 @@ func main() {
 
 	flag.Parse()
 
-	db := utils.ConnectToDB(*host, *port, *username, *password, *dbname)
+	db, err := utils.ConnectToDB(*host, *port, *username, *password, *dbname)
 
-	defer db.Close()
+	if err != nil {
+		panic(err)
+	}
 
 	router := gin.Default()
 
 	// Group
 	router.GET("/groups", group.GetAllInfo(db))
-	router.GET("/groups/:cur_group_id/sub", group.GetSubGroup(db))
+	// router.GET("/groups/:cur_group_id/sub", group.GetSubGroup(db))
 	router.POST("/groups", group.AddNewGroup(db))
 
 	// User

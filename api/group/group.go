@@ -7,69 +7,64 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type Group struct {
-	GID      int    `json:"gid"`
+	GID      int    `json:"gid" gorm:"primaryKey"`
 	Name     string `json:"name"`
-	ParentID int    `json:"parent_id,omitempty"`
-	Level    int    `json:"level,omitempty"`
-	Path     string `json:"path,omitempty"`
+	ParentID int    `json:"parent_id"`
+}
+
+type Tabler interface {
+	TableName() string
+}
+
+// Override default table name
+func (Group) TableName() string {
+	return "group_"
 }
 
 // Get all info relate to group
-func GetAllInfo(db *sql.DB) gin.HandlerFunc {
+func GetAllInfo(db *gorm.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
-		rows, err := db.Query("SELECT gid, name, parent_id level FROM group_;")
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		defer rows.Close() // Should be called after handling error to avoid panic for trying to close a nil resultset
-
 		groups := make([]Group, 0)
 
-		for rows.Next() {
-			var g Group
-			if err := rows.Scan(&g.GID, &g.Name, &g.ParentID); err != nil {
-				log.Fatal(err)
-			}
-			groups = append(groups, g)
-		}
-		c.IndentedJSON(http.StatusOK, groups)
+		db.Table("group_").Find(&groups)
 
-		if err := rows.Err(); err != nil {
-			panic(err)
-		}
+		c.IndentedJSON(http.StatusOK, gin.H{"groups": groups})
+
 	}
 	return gin.HandlerFunc(fn)
 }
 
 // Add new group to system
-func AddNewGroup(db *sql.DB) gin.HandlerFunc {
+func AddNewGroup(db *gorm.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
-		var newGroup Group
+		type CreateGroupInput struct {
+			GID      int    `json:"gid" binding:"required"`
+			Name     string `json:"name" binding:"required"`
+			ParentID int    `json:"parent_id" binding:"required"`
+		}
 
-		// Bind the received JSON to newGroup
-		if err := c.BindJSON(&newGroup); err != nil {
+		var input CreateGroupInput
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		result, err := db.Exec("INSERT INTO group_ (gid, name, parent_id) VALUES ($1, $2, $3)",
-			newGroup.GID, newGroup.Name, newGroup.ParentID)
+		newGroup := Group{GID: input.GID, Name: input.Name, ParentID: input.ParentID}
 
-		if err != nil {
+		result := db.Create(&newGroup)
+
+		if err := result.Error; err != nil {
 			panic(err)
 		}
 
-		rowsAffected, err := result.RowsAffected()
+		fmt.Printf("%d row(s) affected", result.RowsAffected)
 
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Created successfully (%d row(s) affected)", rowsAffected)
+		c.JSON(http.StatusCreated, gin.H{"group": newGroup})
 	}
 
 	return gin.HandlerFunc(fn)
@@ -101,7 +96,7 @@ func GetSubGroup(db *sql.DB) gin.HandlerFunc {
 
 		for rows.Next() {
 			var g Group
-			if err := rows.Scan(&g.GID, &g.Name, &g.ParentID, &g.Level, &g.Path); err != nil {
+			if err := rows.Scan(&g.GID, &g.Name, &g.ParentID); err != nil {
 				log.Fatal(err)
 			}
 			sub_groups = append(sub_groups, g)

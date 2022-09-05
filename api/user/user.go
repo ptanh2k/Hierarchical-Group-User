@@ -1,74 +1,50 @@
 package user
 
 import (
-	"database/sql"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	Uid       int    `json:"uid,omitempty"`
+	Uid       int    `json:"uid" gorm:"primaryKey"`
 	Username  string `json:"username"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
-	GID       int    `json:"gid,omitempty"`
+	GID       int    `json:"gid"`
 }
 
-func GetAllInfo(db *sql.DB) gin.HandlerFunc {
+type Tabler interface {
+	TableName() string
+}
+
+// Override default table name
+func (User) TableName() string {
+	return "user_"
+}
+
+func GetAllInfo(db *gorm.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
-		rows, err := db.Query("SELECT * FROM user_;")
-
-		if err != nil {
-			panic(err)
-		}
-
-		defer rows.Close()
-
 		users := make([]User, 0)
 
-		for rows.Next() {
-			var u User
-			if err := rows.Scan(&u.Uid, &u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.GID); err != nil {
-				log.Fatal(err)
-			}
-			users = append(users, u)
-		}
+		db.Table("user_").Find(&users)
 
-		c.IndentedJSON(http.StatusOK, users)
-
-		if err := rows.Err(); err != nil {
-			panic(err)
-		}
+		c.JSON(http.StatusOK, gin.H{"users": users})
 	}
+
 	return gin.HandlerFunc(fn)
 }
 
 // Get user by user ID
-func GetUserById(db *sql.DB) gin.HandlerFunc {
+func GetUserById(db *gorm.DB) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		id := c.Param("id")
 
-		stmt, err := db.Prepare(`SELECT u.username, u.firstname, u.lastname, u.email, g.gid 
-								FROM user_ u INNER JOIN group_ g 
-								ON u.gid = g.gid WHERE u.uid = $1;`)
-
-		if err != nil {
-			panic(err)
-		}
-
 		var u User
 
-		err = stmt.QueryRow(id).Scan(&u.Username, &u.Firstname, &u.Lastname, &u.Email, &u.GID)
-
-		if err != nil {
-			if err == sql.ErrNoRows {
-				c.IndentedJSON(http.StatusNotFound, u)
-			}
-			panic(err)
-		}
+		db.Model(&User{}).Select("user_.username, user_.firstname, user_.lastname, user_.email, group_.gid").Joins("inner join group_ on user_.gid = group_.gid").Where("user_.uid = ?", id).Scan(&u)
 
 		c.IndentedJSON(http.StatusOK, u)
 	}
